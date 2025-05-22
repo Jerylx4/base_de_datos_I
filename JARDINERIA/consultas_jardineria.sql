@@ -299,6 +299,107 @@
     WHERE p.codigo_cliente = c.codigo_cliente
   )
 
+
 -- 1.4.8.5 Subconsultas correlacionadas
+--19.Devuelve un listado que muestre solamente los clientes que sí han realizado algún pago.
+SELECT cliente.codigo_cliente, cliente.nombre_cliente
+FROM jardineria.cliente
+WHERE EXISTS (
+    SELECT 1
+    FROM jardineria.pago
+    WHERE pago.codigo_cliente = cliente.codigo_cliente);
+
+--20.Devuelve un listado de los productos que nunca han aparecido en un pedido.
+SELECT producto.codigo_producto, producto.nombre
+FROM jardineria.producto
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM jardineria.detalle_pedido
+    WHERE detalle_pedido.codigo_producto = producto.codigo_producto);
+
+--21.Devuelve un listado de los productos que han aparecido en un pedido alguna vez.
+SELECT producto.codigo_producto, producto.nombre
+FROM jardineria.producto
+WHERE EXISTS (
+    SELECT 1
+    FROM jardineria.detalle_pedido
+    WHERE detalle_pedido.codigo_producto = producto.codigo_producto);
+
 
 -- 1.4.9 Consultas variadas
+--1.Devuelve el listado de clientes indicando el nombre del cliente y cuántos pedidos ha realizado. Tenga en cuenta que pueden existir clientes que no han realizado ningún pedido.
+SELECT cliente.nombre_cliente, COUNT(pedido.codigo_pedido) AS cantidad_pedidos
+FROM jardineria.cliente
+LEFT JOIN jardineria.pedido
+  ON cliente.codigo_cliente = pedido.codigo_cliente
+GROUP BY cliente.nombre_cliente
+ORDER BY cantidad_pedidos DESC;
+
+--2.Devuelve un listado con los nombres de los clientes y el total pagado por cada uno de ellos. Tenga en cuenta que pueden existir clientes que no han realizado ningún pago.
+SELECT cliente.nombre_cliente,
+  COALESCE(SUM(pago.total), 0) AS total_pagado
+FROM jardineria.cliente
+LEFT JOIN jardineria.pago
+  ON cliente.codigo_cliente = pago.codigo_cliente
+GROUP BY cliente.nombre_cliente
+ORDER BY total_pagado DESC;
+
+--3.Devuelve el nombre de los clientes que hayan hecho pedidos en 2008 ordenados alfabéticamente de menor a mayor.
+SELECT DISTINCT cliente.nombre_cliente
+FROM jardineria.cliente
+JOIN jardineria.pedido
+  ON cliente.codigo_cliente = pedido.codigo_cliente
+WHERE EXTRACT(YEAR FROM pedido.fecha_pedido) = 2008
+ORDER BY cliente.nombre_cliente ASC;
+
+--4.Devuelve el nombre del cliente, el nombre y primer apellido de su representante de ventas y el número de teléfono de la oficina del representante de ventas, de aquellos clientes que no hayan realizado ningún pago.
+SELECT 
+  cliente.nombre_cliente,
+  empleado.nombre AS nombre_representante,
+  empleado.apellido1 AS apellido_representante,
+  oficina.telefono AS telefono_oficina
+FROM jardineria.cliente
+JOIN jardineria.empleado
+  ON cliente.codigo_empleado_rep_ventas = empleado.codigo_empleado
+JOIN jardineria.oficina
+  ON empleado.codigo_oficina = oficina.codigo_oficina
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM jardineria.pago
+  WHERE pago.codigo_cliente = cliente.codigo_cliente);
+
+--5.Devuelve el listado de clientes donde aparezca el nombre del cliente, el nombre y primer apellido de su representante de ventas y la ciudad donde está su oficina.
+SELECT 
+  cliente.nombre_cliente,
+  empleado.nombre AS nombre_representante,
+  empleado.apellido1 AS apellido_representante,
+  oficina.ciudad AS ciudad_oficina
+FROM jardineria.cliente
+JOIN jardineria.empleado
+  ON cliente.codigo_empleado_rep_ventas = empleado.codigo_empleado
+JOIN jardineria.oficina
+  ON empleado.codigo_oficina = oficina.codigo_oficina
+
+--6.Devuelve el nombre, apellidos, puesto y teléfono de la oficina de aquellos empleados que no sean representante de ventas de ningún cliente.
+SELECT 
+  empleado.nombre,
+  empleado.apellido1,
+  empleado.apellido2,
+  empleado.puesto,
+  oficina.telefono
+FROM jardineria.empleado
+JOIN jardineria.oficina
+  ON empleado.codigo_oficina = oficina.codigo_oficina
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM jardineria.cliente
+  WHERE cliente.codigo_empleado_rep_ventas = empleado.codigo_empleado);
+
+--7.Devuelve un listado indicando todas las ciudades donde hay oficinas y el número de empleados que tiene.
+SELECT 
+  oficina.ciudad,
+  COUNT(empleado.codigo_empleado) AS numero_empleados
+FROM jardineria.oficina
+LEFT JOIN jardineria.empleado
+  ON oficina.codigo_oficina = empleado.codigo_oficina
+GROUP BY oficina.ciudad
