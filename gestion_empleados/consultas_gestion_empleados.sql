@@ -345,12 +345,92 @@ WHERE cli.nombre = 'María'
   FROM "empleado".empleado;
 
 -- 1.2.7 Subconsultas
-
 -- 1.2.7.1 Con operadores básicos de comparación
+
+--1.Devuelve un listado con todos los empleados que tiene el departamento de Sistemas. 
+--(Sin utilizar INNER JOIN).
+SELECT *
+FROM empleado.empleado, empleado.departamento
+WHERE empleado.id_departamento = departamento.id
+AND departamento.nombre = 'Sistemas';
+
+
+--2.Devuelve el nombre del departamento con mayor presupuesto y la cantidad que tiene asignada.
+SELECT nombre, presupuesto
+FROM empleado.departamento
+ORDER BY presupuesto DESC
+LIMIT 1;
+
+
+--3.evuelve el nombre del departamento con menor presupuesto y la cantidad que tiene asignada.
+SELECT nombre, presupuesto
+FROM empleado.departamento
+ORDER BY presupuesto ASC
+LIMIT 1;
 
 -- 1.2.7.2 Subconsultas con ALL y ANY
 
+--4.Devuelve el nombre del departamento con menor presupuesto y la cantidad que tiene asignada. 
+--Sin hacer uso de MIN, ORDER BY ni LIMIT.
+SELECT nombre, presupuesto
+FROM empleado.departamento d1
+WHERE NOT EXISTS (
+    SELECT 1 FROM empleado.departamento d2 WHERE d2.presupuesto < d1.presupuesto
+);
+
+
+--5.Devuelve los nombres de los departamentos que tienen empleados asociados. (Utilizando ALL o ANY).
+SELECT nombre
+FROM empleado.departamento
+WHERE id = ANY (
+    SELECT id_departamento FROM empleado.empleado
+);
+
+--6.Devuelve los nombres de los departamentos que no tienen empleados asociados. (Utilizando ALL o ANY).
+SELECT nombre
+FROM empleado.departamento
+WHERE id <> ALL (
+    SELECT id_departamento
+    FROM empleado.empleado
+    WHERE id_departamento IS NOT NULL
+);
+
+--7.Devuelve los nombres de los departamentos que tienen empleados asociados. (Utilizando IN o NOT IN).
+SELECT nombre
+FROM empleado.departamento
+WHERE id IN (
+    SELECT id_departamento FROM empleado.empleado
+);
 -- 1.2.7.3 Subconsultas con IN y NOT IN
 
+--8.Devuelve los nombres de los departamentos que no tienen empleados asociados. (Utilizando IN o NOT IN).
+SELECT nombre
+FROM empleado.departamento
+WHERE id NOT IN (
+    SELECT id_departamento
+    FROM empleado.empleado
+    WHERE id_departamento IS NOT NULL
+);
+
+--9.Devuelve los nombres de los departamentos que tienen empleados asociados. (Utilizando EXISTS o NOT EXISTS).
+SELECT nombre
+FROM empleado.departamento d
+WHERE EXISTS (
+    SELECT 1 FROM empleado.empleado e WHERE e.id_departamento = d.id
+);
 -- 1.2.7.4 Subconsultas con EXISTS y NOT EXISTS
 
+--10.Devuelve los nombres de los departamentos que tienen empleados asociados. (Utilizando EXISTS).
+SELECT nombre
+FROM empleado.departamento d
+WHERE EXISTS (
+    SELECT 1 FROM empleado.empleado e WHERE e.id_departamento = d.id
+);
+
+
+--11.Devuelve los nombres de los departamentos que tienen empleados asociados. (Utilizando NOT EXISTS).
+SELECT nombre
+FROM empleado.departamento d
+WHERE NOT EXISTS (
+    SELECT 1 FROM empleado.empleado e WHERE e.id_departamento = d.id
+);
