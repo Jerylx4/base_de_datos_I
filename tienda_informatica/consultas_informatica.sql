@@ -123,12 +123,23 @@
           WHERE p.id_fabricante = f.id) AS precio_maximo
   FROM tiendainformatica.fabricante f
   
-  --16. Devuelve un listado de todos los productos que tienen un precio mayor o igual a la media de todos los productos de su mismo fabricante.
-  SELECT p.nombre, p.precio FROM tiendainformatica.producto p
-  WHERE p.precio >= (SELECT AVG(p2.precio) FROM tiendainformatica.producto p2 WHERE p2.id_fabricante = p.id_fabricante)
-  
-  --17. Lista el nombre del producto más caro del fabricante Lenovo.
-  SELECT p.nombre, p.precio FROM tiendainformatica.producto pJoin tiendainformatica.fabricante f on p.id_fabricante=f.id
-  WHERE f.nombre = 'Lenovo' AND p.precio = (SELECT MAX(p2.precio) FROM tiendainformatica.producto p2 WHERE p2.id_fabricante = p.id_fabricante)
+	  --16. Devuelve un listado de todos los productos que tienen un precio mayor o igual a la media de todos los productos de su mismo fabricante.
+	  SELECT p.nombre, p.precio FROM tiendainformatica.producto p
+	  WHERE p.precio >= (SELECT AVG(p2.precio) FROM tiendainformatica.producto p2 WHERE p2.id_fabricante = p.id_fabricante)
+	  
+	  --17. Lista el nombre del producto más caro del fabricante Lenovo.
+	  SELECT p.nombre, p.precio FROM tiendainformatica.producto pJoin tiendainformatica.fabricante f on p.id_fabricante=f.id
+	  WHERE f.nombre = 'Lenovo' AND p.precio = (SELECT MAX(p2.precio) FROM tiendainformatica.producto p2 WHERE p2.id_fabricante = p.id_fabricante)
 
 --1.1.8 Subconsultas (En la cláusula HAVING)
+
+	-- 18. Devuelve un listado con todos los nombres de los fabricantes que tienen el mismo número de productos que el fabricante Lenovo.
+	SELECT f.nombre, COUNT(p.nombre) AS numero_producto FROM tienda_informatica.fabricante f
+	INNER JOIN tienda_informatica.producto p ON p.id_fabricante = f.id
+	WHERE f.nombre NOT ILIKE 'lenovo'
+	GROUP BY f.nombre 
+	HAVING COUNT(p.nombre) = (
+	SELECT COUNT(p.nombre) FROM tienda_informatica.fabricante f
+	INNER JOIN tienda_informatica.producto p ON p.id_fabricante = f.id 
+	WHERE f.nombre ILIKE 'lenovo'
+	)
