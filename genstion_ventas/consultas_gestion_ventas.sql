@@ -130,9 +130,97 @@ WHERE nombre LIKE '%el' OR nombre LIKE '%o';
 
 -- 1.3.7.1 Con operadores básicos de comparación
 
+/*3. Devuelve los datos del cliente que realizó el pedido más caro en el 
+año 2019. (Sin utilizar INNER JOIN)*/ 
+
+SELECT cliente
+FROM ventas.cliente
+WHERE id= ANY(SELECT id_cliente
+FROM ventas.pedido
+WHERE total=(SELECT MAX(total)FROM ventas.pedido WHERE fecha BETWEEN '2019-01-01' AND '2019-12-31'));
+
+--4. Devuelve la fecha y la cantidad del pedido de menor valor realizado por el cliente Pepe Ruiz Santana.
+SELECT fecha, total
+FROM "ventas".pedido p
+INNER JOIN "ventas".cliente c ON p.id_cliente = c.id
+WHERE nombre = 'Pepe'
+		AND apellido1 = 'Ruiz'
+		AND apellido2 = 'Santana'
+ORDER BY p.total ASC 
+LIMIT 1;
+
+/*5. Devuelve un listado con los datos de los clientes y los pedidos, de todos
+los clientes que han realizado un pedido durante el año 2017 con un valor
+mayor o igual al valor medio de los pedidos realizados durante ese
+mismo año*/
+
+SELECT c.id, c.nombre, p.id, p.total
+FROM ventas.cliente c
+JOIN ventas.pedido p ON c.id = p.id
+WHERE EXTRACT(YEAR FROM p.fecha) = 2017
+AND p.total >= (
+    SELECT AVG(total)
+    FROM ventas.pedido
+    WHERE EXTRACT(YEAR FROM fecha) = 2017
+)
+ORDER BY p.fecha;
+
 -- 1.3.7.2 Subconsultas con ALL y ANY
+--6. Devuelve el pedido más caro que existe en la tabla pedido si hacer uso de MAX, ORDER BY ni LIMIT.
+
+SELECT *
+FROM "Gestion_Ventas".pedido p
+WHERE p.total >= ALL (SELECT p.total FROM "Gestion_Ventas".pedido);
+
+SELECT *
+FROM "Gestion_Ventas".pedido p 
+WHERE NOT (p.total >= ANY (SELECT p.total FROM "Gestion_Ventas".pedido p2));
+
+/*7. Devuelve un listado de los clientes que no han realizado ningún pedido. 
+(Utilizando ANY o ALL).*/
+SELECT cliente 
+FROM ventas.cliente 
+WHERE id != ALL (SELECT id_cliente FROM ventas.pedido);
+
+--8. Devuelve un listado de los comerciales que no han realizado ningún pedido. (Utilizando ANY o ALL).
+SELECT *
+FROM "ventas".comercial c
+WHERE c.id <> ALL (
+  SELECT id_comercial
+  FROM "ventas".pedido
+);
+
 
 -- 1.3.7.3 Subconsultas con IN y NOT IN
 
--- 1.3.7.4 Subconsultas con EXISTS y NOT EXISTS
+--9. Devuelve un listado de los clientes que no han realizado ningún pedido. (Utilizando IN o NOT IN).
+SELECT cliente
+FROM ventas.cliente 
+WHERE NOT EXISTS (SELECT id_cliente FROM ventas.pedido WHERE cliente.id = pedido.id_cliente);  
 
+--10. Devuelve un listado de los comerciales que no han realizado ningún pedido. (Utilizando IN o NOT IN)
+
+SELECT *
+FROM "Gestion_Ventas".comercial c
+WHERE c.id NOT IN (
+    SELECT p.id_comercial
+    FROM "Gestion_Ventas".pedido p
+    WHERE p.id_comercial IS NOT NULL
+);
+
+
+-- 1.3.7.4 Subconsultas con EXISTS y NOT EXISTS
+/*11. Devuelve un listado de los clientes que no han realizado ningún pedido. 
+(Utilizando EXISTS o NOT EXISTS). */
+SELECT cliente
+FROM ventas.cliente 
+WHERE NOT EXISTS (SELECT id_cliente FROM ventas.pedido WHERE cliente.id = pedido.id_cliente);  
+
+--12. Devuelve un listado de los comerciales que no han realizado ningún pedido. (Utilizando EXISTS o NOT EXISTS).
+SELECT *
+FROM "ventas".comercial c
+WHERE NOT EXISTS (
+	SELECT 1
+	FROM "ventas".pedido p
+	WHERE p.id_comercial = c.id
+);
