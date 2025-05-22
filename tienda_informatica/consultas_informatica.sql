@@ -139,11 +139,248 @@ FROM tienda_informatica.producto p;
 SELECT f.nombre
 FROM tienda_informatica.fabricante f
 WHERE f.nombre LIKE 'S%';
+
+--31.Lista los nombres de los fabricantes cuyo nombre termine por la vocal e.
+SELECT nombre 
+FROM tienda_informatica.fabricante 
+WHERE nombre LIKE '%e';
+
+--32. Lista los nombres de los fabricantes cuyo nombre contenga el carácter w.
+SELECT nombre 
+FROM tienda_informatica.fabricante 
+WHERE nombre LIKE '%w%';
+
+--33. Lista los nombres de los fabricantes cuyo nombre sea de 4 caracteres.
+SELECT nombre
+FROM tiendainformatica.fabricante
+WHERE LENGTH(nombre) = 4;
+
+--34. Devuelve una lista con el nombre de todos los productos que contienen la cadena Portátil en el nombre.
+SELECT p.nombre 
+FROM "Tienda_Informatica".producto p
+WHERE p.nombre LIKE '%Portátil%';
+
+--35. Devuelve una lista con el nombre de todos los productos que contienen 
+la cadena Monitor en el nombre y tienen un precio inferior a 215 €. */
+SELECT nombre 
+FROM "tiendaInformatica"."producto" 
+WHERE nombre LIKE '%Monitor%' AND precio < 215;
+
+--36. Lista el nombre y el precio de todos los productos que tengan un precio mayor o igual a 180€. 
+--Ordene el resultado en primer lugar por el precio (en orden descendente) y en segundo lugar por el nombre 
+--(en orden ascendente).
+SELECT p.nombre, p.precio
+FROM "tienda".producto p
+WHERE p.precio >= 180
+ORDER BY p.precio DESC, p.nombre ASC;
 --1.1.4 Consultas multitabla (Composición interna)
+--1. Devuelve una lista con el nombre del producto, precio y nombre
+de fabricante de todos los productos de la base de datos.*/
+
+SELECT 
+    p.nombre AS nombre_producto,
+    p.precio,
+    f.nombre AS nombre_fabricante
+FROM 
+    tiendainformatica.producto p
+JOIN 
+    tiendainformatica.fabricante f ON p.id_fabricante = f.id
+ORDER BY 
+    p.nombre;
+
+--2. Devuelve una lista con el nombre del producto, precio y nombre de fabricante de todos 
+--los productos de la base de datos. Ordene el resultado por el nombre del fabricante, por orden alfabético.
+--SQL1
+SELECT p.nombre, p.precio, p.id_fabricante
+FROM "Tienda_Informatica".producto p, "Tienda_Informatica".fabricante f
+WHERE p.id_fabricante = f.id
+ORDER BY f.nombre;
+--SQL2
+SELECT p.nombre, p.precio, p.id_fabricante
+FROM "Tienda_Informatica".producto p
+JOIN "Tienda_Informatica".fabricante f 
+ON p.id_fabricante = f.id
+ORDER BY f.nombre;
+
+/*3. Devuelve una lista con el identificador del producto, nombre del 
+producto, identificador del fabricante y nombre del fabricante, de 
+todos los productos de la base de datos.*/
+SELECT pro.id, pro.nombre, fa.id AS fabricante_id, fa.nombre AS fabricante_nombre
+FROM "tiendaInformatica"."producto" AS pro
+INNER JOIN "tiendaInformatica"."fabricante" AS fa ON pro.id_fabricante = fa.id;
+
+--4. Devuelve el nombre del producto, su precio y el nombre de su fabricante, del producto más barato.
+--SQL2
+SELECT p.nombre, p.precio, f.nombre
+FROM "tienda".producto p
+JOIN "tienda".fabricante f ON p.id_fabricante = f.id
+ORDER BY p.precio ASC 
+LIMIT 1;
+
+--SQL1
+SELECT p.nombre AS nombre_producto, p.precio, f.nombre AS nombre_fabricante
+FROM "tienda".producto p, "tienda".fabricante f
+WHERE p.id_fabricante = f.id
+  AND p.precio = (
+    SELECT MIN(precio)
+    FROM "tienda".producto
+  );
+
+/*5. Devuelve el nombre del producto, su precio y el nombre de su
+fabricante, del producto más caro.*/
+
+SELECT 
+    p.nombre AS nombre_producto,
+    p.precio,
+    f.nombre AS nombre_fabricante
+FROM 
+    tiendainformatica.producto p
+JOIN 
+    tiendainformatica.fabricante f ON p.id_fabricante = f.id
+WHERE 
+    p.precio = (SELECT MAX(precio) FROM tiendainformatica.producto);
+
+--6. Devuelve una lista de todos los productos del fabricante Lenovo.
+--SQL1
+SELECT *, f.nombre AS Fabricante
+FROM "Tienda_Informatica".producto p, "Tienda_Informatica".fabricante f
+WHERE p.id_fabricante = f.id
+AND f.nombre = 'Lenovo';
+--SQL2
+SELECT *, f.nombre AS Fabricante
+FROM "Tienda_Informatica".producto p
+JOIN "Tienda_Informatica".fabricante f 
+ON p.id_fabricante = f.id
+WHERE f.nombre LIKE '%Lenovo%';
+
+/*7. Devuelve una lista de todos los productos del 
+fabricante Crucial que tengan un precio mayor que 200€. */
+SELECT pro.nombre, pro.precio, fa.nombre
+FROM "tiendaInformatica"."producto" AS pro
+INNER JOIN "tiendaInformatica"."fabricante" AS fa ON pro.id_fabricante = fa.id
+WHERE fa.nombre = 'Crucial' AND pro.precio > 200;
+
+--8. Devuelve un listado con todos los productos de los fabricantes Asus, Hewlett-Packardy Seagate. 
+--Sin utilizar el operador IN.
+
+--SQL1
+SELECT p.nombre AS nombre_producto, p.precio, f.nombre AS nombre_fabricante
+FROM "tienda".producto p, "tienda".fabricante f
+WHERE p.id_fabricante = f.id
+  AND (
+       f.nombre = 'Asus'
+    OR f.nombre = 'Hewlett-Packard'
+    OR f.nombre = 'Seagate'
+  );
+--SQL2
+SELECT p.nombre AS nombre_producto, p.precio, f.nombre AS nombre_fabricante
+FROM "tienda".producto p
+JOIN "tienda".fabricante f ON p.id_fabricante = f.id
+WHERE f.nombre = 'Asus'
+   OR f.nombre = 'Hewlett-Packard'
+   OR f.nombre = 'Seagate';
+
+/*9. Devuelve un listado con todos los productos de los
+fabricantes Asus, Hewlett-Packardy Seagate. Utilizando el
+operador IN*/
+
+SELECT 
+    p.nombre AS nombre_producto,
+    p.precio,
+    f.nombre AS nombre_fabricante
+FROM 
+    tiendainformatica.producto p
+JOIN 
+    tiendainformatica.fabricante f ON p.id_fabricante = f.id
+WHERE 
+    f.nombre IN ('Asus', 'Hewlett-Packard', 'Seagate')
+ORDER BY 
+    f.nombre, p.nombre;
+
+--10. Devuelve un listado con el nombre y el precio de todos los productos de los 
+--fabricantes cuyo nombre termine por la vocal e.
+
+--SQL1
+SELECT p.nombre, p.precio , f.nombre
+FROM "Tienda_Informatica".producto p, "Tienda_Informatica".fabricante f
+WHERE p.id_fabricante = f.id
+AND f.nombre LIKE '%e';
+  
+--SQL2
+SELECT p.nombre, p.precio , f.nombre
+FROM "Tienda_Informatica".producto p
+JOIN "Tienda_Informatica".fabricante f 
+ON p.id_fabricante = f.id
+WHERE f.nombre LIKE '%e';
+
+/*11. Devuelve un listado con el nombre y el precio de todos los 
+productos cuyo nombre de fabricante contenga el carácter w en su 
+nombre.*/
+SELECT pro.nombre, pro.precio, fa.nombre AS nombre_fabricante
+FROM "tiendaInformatica"."producto" AS pro
+JOIN "tiendaInformatica"."fabricante" AS fa ON pro.id_fabricante = fa.id
+WHERE fa.nombre LIKE '%w%';
+
+--12.	Devuelve un listado con el nombre de producto, precio y nombre de fabricante, de todos los productos 
+--que tengan un precio mayor o igual a 180€. Ordene el resultado en primer lugar por el precio (en orden descendente) 
+--y en segundo lugar por el nombre (en orden ascendente)
+--SQL1
+SELECT p.nombre AS nombre_producto, p.precio, f.nombre AS nombre_fabricante
+FROM "tienda".producto p, "tienda".fabricante f
+WHERE p.id_fabricante = f.id
+  AND p.precio >= 180
+ORDER BY p.precio DESC, p.nombre ASC;
+
+--SQL2
+SELECT p.nombre, p.precio, f.nombre 
+FROM "tienda".producto p
+INNER JOIN "tienda".fabricante f ON p.id_fabricante = f.id
+WHERE p.precio >= 180
+ORDER BY p.precio DESC, p.nombre ASC;
+
+--13.Devuelve un listado con el identificador y el nombre de fabricante, solamente de aquellos 
+--fabricantes que tienen productos asociados en la base de datos.
+
+SELECT DISTINCT f.id, f.nombre
+FROM tienda_informatica.fabricante f, tienda_informatica.producto p
+WHERE f.id = p.id_fabricante;
 
 --1.1.5 Consultas multitabla (Composición externa)
 
+--1. Devuelve un listado de todos los fabricantes que existen en la base de datos, 
+--junto con los productos que tiene cada uno de ellos. El listado deberá mostrar también 
+--aquellos fabricantes que no tienen productos asociados
+
+SELECT f.*, p.*
+FROM "Tienda_Informatica".fabricante f
+LEFT JOIN "Tienda_Informatica".producto p
+ON f.id = p.id_fabricante;
+
+/*2. Devuelve un listado donde sólo aparezcan aquellos fabricantes 
+que no tienen ningún producto asociado. */
+SELECT f.nombre
+FROM "tiendaInformatica"."producto" p 
+RIGHT JOIN "tiendaInformatica"."fabricante" f ON p.id_fabricante = f.id
+WHERE p.id_fabricante IS NULL;
+GROUP BY  d.nombre;
+
+--3. ¿Pueden existir productos que no estén relacionados con un fabricante? Justifique su respuesta.
+
+/*La columna id_fabricante está definida como NOT NULL, lo que obliga a que cada producto tenga un valor 
+en esa columna (es decir, debe tener un fabricante asociado). id_fabricante integer NOT NULL
+Además, id_fabricante es una clave foránea (FOREIGN KEY) que referencia fabricante(id), por lo que:
+Ese valor debe coincidir con un id válido de la tabla fabricante.*/
+
 --1.1.6 Consultas resumen
+
+--1. Calcula el número total de productos que hay en la
+tabla productos.
+
+SELECT COUNT(*) AS total_productos
+FROM tiendainformatica.producto;
+--2. Calcula el número total de fabricantes que hay en la tabla fabricante.
+SELECT COUNT(*) AS total_fabricantes
+FROM "Tienda_Informatica".fabricante;
 
   --26. Devuelve un listado con los nombres de los fabricantes y el número de productos que tiene cada uno con un precio superior o igual a 220 €. No es necesario mostrar el nombre de los fabricantes que no tienen productos que cumplan la condición.
   SELECT f.nombre, COUNT(p.id) AS num_productos FROM tienda_informatica.fabricante f JOIN tienda_informatica.producto p ON f.id = p.id_fabricante
