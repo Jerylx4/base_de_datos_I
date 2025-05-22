@@ -1,4 +1,45 @@
 -- 1.2.3 Consultas sobre una tabla
+  --11. Lista el nombre de cada departamento y el valor del presupuesto actual del que dispone. Para calcular este dato tendrá que restar al valor del presupuesto inicial (columna presupuesto) los gastos que se han generado (columna gastos). 
+  --Tenga en cuenta que en algunos casos pueden existir valores negativos. Utilice un alias apropiado para la nueva columna columna que está calculando.
+  SELECT * FROM departamento
+  SELECT * FROM empleado
+  SELECT nombre,presupuesto,gastos,(presupuesto-gastos) AS presupuesto_actual FROM departamento
+  
+  --12. Lista el nombre de los departamentos y el valor del presupuesto actual ordenado de forma ascendente.
+  SELECT nombre,presupuesto,gastos,(presupuesto-gastos) AS presupuesto_actual FROM departamento
+  ORDER BY presupuesto_actual ASC
+  
+  --13.Lista el nombre de todos los departamentos ordenados de forma ascendente.
+  SELECT nombre FROM departamento
+  ORDER BY nombre ASC
+  
+  --14. Lista el nombre de todos los departamentos ordenados de forma descendente.
+  SELECT nombre FROM departamento
+  ORDER BY nombre DESC
+  
+  --15. Lista los apellidos y el nombre de todos los empleados, ordenados de forma alfabética tendiendo en cuenta en primer lugar sus apellidos y luego su nombre.
+  SELECT apellido1,apellido2,nombre FROM empleado
+  ORDER BY apellido1 ASC
+  
+  --16.Devuelve una lista con el nombre y el presupuesto, de los 3 departamentos que tienen mayor presupuesto.
+  SELECT nombre,presupuesto FROM departamento
+  ORDER BY presupuesto DESC
+  LIMIT 3
+  
+  --17. Devuelve una lista con el nombre y el presupuesto, de los 3 departamentos que tienen menor presupuesto.
+  SELECT nombre,presupuesto FROM departamento
+  ORDER BY presupuesto ASC
+  LIMIT 3
+  
+  --18. Devuelve una lista con el nombre y el gasto, de los 2 departamentos que tienen mayor gasto.
+  SELECT nombre,gastos FROM departamento
+  ORDER BY gastos DESC
+  LIMIT 2
+  
+  --19. Devuelve una lista con el nombre y el gasto, de los 2 departamentos que tienen menor gasto.
+  SELECT nombre,gastos FROM departamento
+  ORDER BY gastos ASC
+  LIMIT 2
 
 -- 1.2.4 Consultas multitabla (Composición interna)
 
