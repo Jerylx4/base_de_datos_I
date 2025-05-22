@@ -299,8 +299,6 @@
     WHERE p.codigo_cliente = c.codigo_cliente
   )
 
-
--- 1.4.8.5 Subconsultas correlacionadas
 --19.Devuelve un listado que muestre solamente los clientes que sí han realizado algún pago.
 SELECT cliente.codigo_cliente, cliente.nombre_cliente
 FROM jardineria.cliente
@@ -324,6 +322,8 @@ WHERE EXISTS (
     SELECT 1
     FROM jardineria.detalle_pedido
     WHERE detalle_pedido.codigo_producto = producto.codigo_producto);
+
+-- 1.4.8.5 Subconsultas correlacionadas
 
 
 -- 1.4.9 Consultas variadas
