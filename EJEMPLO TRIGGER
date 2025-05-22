@@ -1,19 +1,1 @@
-CREATE OR REPLACE FUNCTION jardineria.validar_estado_pedido()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.estado NOT IN ('Entregado', 'Pendiente', 'Cancelado') THEN
-        RAISE EXCEPTION 'Estado de pedido inválido: %. Debe ser Entregado, Pendiente o Cancelado.', NEW.estado;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
 
-
-CREATE TRIGGER trigger_validar_estado_pedido
-BEFORE INSERT OR UPDATE ON jardineria.pedido
-FOR EACH ROW
-EXECUTE FUNCTION jardineria.validar_estado_pedido();
-
-------------PRUEBA-------------
-INSERT INTO jardineria.pedido (codigo_pedido, fecha_pedido, fecha_esperada, fecha_entrega, estado, comentarios, codigo_cliente)
-VALUES (99998, CURRENT_DATE, CURRENT_DATE + INTERVAL '5 days', NULL, 'Listo', 'Prueba inválida', 103);
