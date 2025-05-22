@@ -141,6 +141,147 @@
   INNER JOIN jardineria.producto ON jardineria.detalle_pedido.codigo_producto = jardineria.producto.codigo_producto;
 
 -- 1.4.6 Consultas multitabla (Composición externa)
+  --Resuelva todas las consultas utilizando las cláusulas LEFT JOIN, RIGHT JOIN, NATURAL LEFT JOIN y NATURAL RIGHT JOIN.
+  
+  --1. Devuelve un listado que muestre solamente los clientes que no han 
+  --realizado ningún pago.
+  SELECT c.nombre_cliente
+  FROM jardineria.cliente c
+  LEFT JOIN jardineria.pago p ON c.codigo_cliente = p.codigo_cliente
+  WHERE p.codigo_cliente IS NULL;
+  
+  --2. Devuelve un listado que muestre solamente los clientes que no han realizado ningún pedido.
+  SELECT DISTINCT * FROM "jardineria".cliente c
+  LEFT JOIN "jardineria".pedido p ON c.codigo_cliente = p.codigo_cliente;
+  
+  --3. Devuelve un listado que muestre los clientes que no han realizado
+  --ningún pago y los que no han realizado ningún pedido.*/
+  
+  SELECT c.codigo_cliente, c.nombre_cliente
+  FROM jardineria.cliente c
+  LEFT JOIN jardineria.pago p ON c.codigo_cliente = p.codigo_cliente
+  LEFT JOIN jardineria.pedido pe ON c.codigo_cliente = pe.codigo_cliente
+  WHERE p.codigo_cliente IS NULL AND pe.codigo_cliente IS NULL;
+  
+  --4. Devuelve un listado que muestre solamente los empleados que no tienen una oficina asociada.
+  
+  --LEFT JOIN
+  SELECT e.*
+  FROM jardineria.empleado e 
+  LEFT JOIN jardineria.oficina o 
+  ON e.codigo_oficina = o.codigo_oficina
+  WHERE o.codigo_oficina IS NULL;
+  
+  --RIGHT JOIN
+  SELECT e.*
+  FROM jardineria.oficina o
+  RIGHT JOIN jardineria.empleado e ON o.codigo_oficina = e.codigo_oficina
+  WHERE o.codigo_oficina IS NULL;
+  
+  --NATURAL LEFT JOIN 
+  SELECT *
+  FROM jardineria.empleado e
+  NATURAL LEFT JOIN jardineria.oficina o
+  WHERE codigo_oficina IS NULL;
+  
+  --NATURAL RIGHT JOIN
+  SELECT *
+  FROM  jardineria.oficina 
+  NATURAL RIGHT JOIN  jardineria.empleado
+  WHERE codigo_oficina IS NULL;
+  
+  --5. Devuelve un listado que muestre solamente los empleados que no tienen 
+  --un cliente asociado. 
+  SELECT CONCAT(e.nombre, ' ', e.apellido1, ' ', e.apellido2) AS Empleado
+  FROM jardineria.empleado e 
+  LEFT JOIN jardineria.cliente c ON e.codigo_empleado = c.codigo_empleado_rep_ventas
+  WHERE c.codigo_empleado_rep_ventas IS NULL;
+  
+  --6. Devuelve un listado que muestre solamente los empleados que no tienen un cliente asociado junto con los datos de 
+  --la oficina donde trabajan.
+  
+  SELECT e.codigo_empleado, e.nombre, e.apellido1, o.codigo_oficina, o.ciudad, o.pais
+  FROM "jardineria".empleado e
+  JOIN "jardineria".oficina o ON e.codigo_oficina = o.codigo_oficina
+  WHERE e.codigo_empleado NOT IN (
+    SELECT DISTINCT codigo_empleado_rep_ventas
+    FROM "jardineria".cliente
+    WHERE codigo_empleado_rep_ventas IS NOT NULL
+  );
+  
+  --7. Devuelve un listado que muestre los empleados que no tienen una
+  --oficina asociada y los que no tienen un cliente asociado.
+  
+  -- LEFT JOIN
+  SELECT c.nombre_cliente, e.nombre, e.apellido1, e.puesto
+  FROM jardineria.cliente c
+  LEFT JOIN jardineria.empleado e ON c.codigo_empleado_rep_ventas = e.codigo_empleado;
+  
+  -- RIGHT JOIN
+  SELECT c.nombre_cliente, e.nombre, e.apellido1, e.puesto
+  FROM jardineria.empleado e
+  RIGHT JOIN jardineria.cliente c ON e.codigo_empleado = c.codigo_empleado_rep_ventas;
+  
+  -- NATURAL LEFT JOIN
+  SELECT c.nombre_cliente, e.nombre, e.apellido1, e.puesto
+  FROM jardineria.cliente c
+  NATURAL LEFT JOIN jardineria.empleado e;
+  
+  -- NATURAL RIGHT JOIN
+  SELECT c.nombre_cliente, e.nombre, e.apellido1, e.puesto
+  FROM jardineria.empleado e
+  NATURAL RIGHT JOIN jardineria.cliente c;
+  
+  --8. Devuelve un listado de los productos que nunca han aparecido en un pedido.
+  --LEFT JOIN
+  SELECT *
+  FROM  jardineria.producto pr
+  LEFT JOIN jardineria.detalle_pedido dp ON pr.codigo_producto = dp.codigo_producto
+  WHERE dp.codigo_producto IS NULL;
+  
+  --RIGHT JOIN
+  SELECT *
+  FROM  jardineria.detalle_pedido dp
+  RIGHT JOIN jardineria.producto pr ON pr.codigo_producto = dp.codigo_producto
+  WHERE dp.codigo_producto IS NULL;
+  
+  --NATURAL LEFT JOIN 
+  SELECT *
+  FROM jardineria.producto
+  NATURAL LEFT JOIN jardineria.detalle_pedido 
+  WHERE codigo_pedido IS NULL;
+  
+  --NATURAL RIGHT JOIN
+  SELECT *
+  FROM  jardineria.detalle_pedido
+  NATURAL RIGHT JOIN  jardineria.producto
+  WHERE codigo_pedido IS NULL;
+  
+  --9. Devuelve un listado de los productos que nunca han aparecido en un 
+  --pedido. El resultado debe mostrar el nombre, la descripción y la imagen 
+  --del producto. 
+  SELECT p.nombre, p.descripcion, pe.comentarios
+  FROM jardineria.producto p 
+  LEFT JOIN jardineria.detalle_pedido dp ON p.codigo_producto = dp.codigo_producto
+  LEFT JOIN jardineria.pedido pe ON dp.codigo_pedido = pe.codigo_pedido
+  WHERE dp.codigo_producto IS NULL;
+    
+  --10. Devuelve las oficinas donde no trabajan ninguno de los empleados que hayan sido los representantes de ventas 
+  --de algún cliente que haya realizado la compra de algún producto de la gama Frutales.
+  SELECT DISTINCT o.*
+  FROM "jardineria".oficina o
+  WHERE o.codigo_oficina NOT IN (
+    SELECT DISTINCT e.codigo_oficina
+    FROM "jardineria".empleado e
+    WHERE e.codigo_empleado IN (
+      SELECT DISTINCT c.codigo_empleado_rep_ventas
+      FROM "jardineria".cliente c
+      JOIN "jardineria".pedido p ON c.codigo_cliente = p.codigo_cliente
+      JOIN "jardineria".detalle_pedido dp ON p.codigo_pedido = dp.codigo_pedido
+      JOIN "jardineria".producto pr ON dp.codigo_producto = pr.codigo_producto
+      WHERE pr.gama = 'Frutales'
+    )
+  );
 
 -- 1.4.7 Consultas resumen
   --1. ¿Cuántos empleados hay en la compañía?
