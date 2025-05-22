@@ -1,4 +1,40 @@
 -- 1.2.3 Consultas sobre una tabla
+--1.Lista el primer apellido de todos los empleados:
+SELECT apellido1 FROM gestion_empleados.empleado;
+
+--2.Lista el primer apellido de los empleados eliminando duplicados:
+SELECT DISTINCT apellido1 FROM gestion_empleados.empleado;
+
+--3.Lista todas las columnas de la tabla empleado:
+SELECT * FROM gestion_empleados.empleado;
+
+--4.Lista el nombre y los apellidos de todos los empleados:
+SELECT nombre, apellido1, apellido2 FROM gestion_empleados.empleado;
+
+--5.Lista el identificador de los departamentos de los empleados:
+SELECT id_departamento FROM gestion_empleados.empleado;
+
+--6.Lista el identificador de los departamentos sin repetir:
+SELECT DISTINCT id_departamento FROM gestion_empleados.empleado;
+
+--7.Lista nombre y apellidos en una única columna:
+SELECT CONCAT(nombre, ' ', apellido1, ' ', COALESCE(apellido2, '')) AS nombre_completo 
+FROM gestion_empleados.empleado;
+
+--8.Lista nombre y apellidos en mayúsculas:
+SELECT UPPER(CONCAT(nombre, ' ', apellido1, ' ', COALESCE(apellido2, ''))) AS nombre_completo 
+FROM gestion_empleados.empleado;
+
+--9.Lista nombre y apellidos en minúsculas:
+SELECT LOWER(CONCAT(nombre, ' ', apellido1, ' ', COALESCE(apellido2, ''))) AS nombre_completo 
+FROM gestion_empleados.empleado;
+--10.Lista identificador de empleados con NIF separado en dígitos y letra:
+SELECT 
+    id,
+    SUBSTRING(nif, 1, 8) AS digitos_nif,
+    SUBSTRING(nif, 9, 1) AS letra_nif
+FROM gestion_empleados.empleado;
+
   --11. Lista el nombre de cada departamento y el valor del presupuesto actual del que dispone. Para calcular este dato tendrá que restar al valor del presupuesto inicial (columna presupuesto) los gastos que se han generado (columna gastos). 
   --Tenga en cuenta que en algunos casos pueden existir valores negativos. Utilice un alias apropiado para la nueva columna columna que está calculando.
   SELECT * FROM departamento
