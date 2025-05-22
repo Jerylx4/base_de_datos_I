@@ -136,12 +136,70 @@ where id_departamento in (2,4,5);
 
 
   -- 1.2.4 Consultas multitabla (Composición interna)
+
+--1.Devuelve un listado con el identificador, nombre y los apellidos de todos los clientes que han realizado algún pedido. 
+--El listado debe estar ordenado alfabéticamente y se deben eliminar los elementos repetidos.
+ 
+SELECT DISTINCT cli.id, cli.nombre, cli.apellido1, cli.apellido2
+FROM ventas.cliente cli
+JOIN ventas.pedido ped ON ped.id_cliente = cli.id
+ORDER BY cli.nombre ASC;
+
+--2.Devuelve un listado que muestre todos los pedidos que ha realizado cada cliente. 
+--El resultado debe mostrar todos los datos de los pedidos y del cliente. 
+--El listado debe mostrar los datos de los clientes ordenados alfabéticamente.
+ 
+SELECT cli.id AS id_cliente, cli.nombre, cli.apellido1, cli.apellido2, cli.ciudad, cli.categoria,
+	ped.id AS id_pedido, ped.total, ped.fecha, ped.id_cliente, ped.id_comercial
+FROM ventas.cliente cli
+JOIN ventas.pedido ped ON ped.id_cliente = cli.id
+ORDER BY cli.nombre ASC;
+
+--3.Devuelve un listado que muestre todos los pedidos en los que ha participado un comercial. 
+--El resultado debe mostrar todos los datos de los pedidos y de los comerciales. 
+--El listado debe mostrar los datos de los comerciales ordenados alfabéticamente.
+ 
+SELECT
+com.id AS id_comercial, com.nombre, com.apellido1, com.apellido2, com.comision,
+ped.id AS id_pedido, ped.total, ped.fecha, ped.id_cliente, ped.id_comercial
+FROM ventas.pedido ped
+JOIN ventas.comercial com ON com.id = ped.id_comercial
+ORDER BY com.nombre ASC;
+
+--3.Devuelve un listado que muestre todos los clientes, 
+--con todos los pedidos que han realizado y con los datos de los comerciales asociados a cada pedido.
+ 
+SELECT *
+FROM ventas.cliente cli
+JOIN ventas.pedido ped ON ped.id_cliente = cli.id
+JOIN ventas.comercial com ON com.id = ped.id_comercial
+ORDER BY cli.nombre ASC;
+
+--5.Devuelve un listado de todos los clientes que realizaron un pedido durante el año 2017, cuya cantidad esté entre 300 € y 1000 €.
+ 
+SELECT cli.nombre, cli.apellido1, ped.total, ped.fecha
+FROM ventas.cliente cli
+JOIN ventas.pedido ped ON ped.id_cliente = cli.id
+WHERE EXTRACT(YEAR FROM ped.fecha) = 2017 
+AND ped.total BETWEEN 300 AND 1000;
+ 
+
+--6.Devuelve el nombre y los apellidos de todos los comerciales que ha participado en algún pedido realizado por María Santana Moreno.
+SELECT DISTINCT com.nombre, com.apellido1, com.apellido2
+FROM ventas.comercial com
+JOIN ventas.pedido ped ON ped.id_comercial = com.id
+JOIN ventas.cliente cli ON ped.id_cliente = cli.id
+WHERE cli.nombre = 'María'
+  AND cli.apellido1 = 'Santana'
+  AND cli.apellido2 = 'Moreno';
+
   --7. Devuelve un listado con los datos de los empleados que trabajan en el --departamento de I+D. Ordena el resultado alfabéticamente.
   SELECT e.*
   FROM empleado.empleado e
   JOIN empleado.departamento d ON e.id_departamento = d.id
   WHERE d.nombre = 'I+D'
   ORDER BY e.nombre, e.apellido1, e.apellido2;
+
   --8. Devuelve un listado con los datos de los empleados que trabajan en el --departamento de Sistemas, Contabilidad o I+D.
   --Ordena el resultado alfabéticamente.
   SELECT e.*
