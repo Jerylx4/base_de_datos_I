@@ -39,17 +39,52 @@ FROM tienda_informatica.producto;
 SELECT nombre, TRUNC(precio) AS precio_truncado 
 FROM tienda_informatica.producto;
 
+--11.Lista el identificador de los fabricantes que tienen productos en la tabla producto.
+SELECT id_fabricante 
+FROM tienda_informatica.producto;
+
+--12.Lista el identificador de los fabricantes que tienen productos en la tabla producto, eliminando los identificadores que aparecen repetidos.
+SELECT DISTINCT id_fabricante 
+FROM tienda_informatica.producto;
+
+--13Lista los nombres de los fabricantes ordenados de forma ascendente.
+SELECT nombre
+FROM tienda_informatica.fabricante
+ORDER BY nombre asc;
+
+--14.Lista los nombres de los fabricantes ordenados de forma descendente.
+SELECT nombre
+FROM tienda_informatica.fabricante 
+ORDER BY nombre desc;
+
+--15.Lista los nombres de los productos ordenados en primer lugar por el nombre de forma ascendente y en segundo lugar por el precio de forma descendente.
+SELECT nombre
+FROM tienda_informatica.producto
+ORDER BY nombre asc, precio desc;
+
+--16.Devuelve una lista con las 5 primeras filas de la tabla fabricante.
+SELECT * 
+FROM tienda_informatica.fabricante 
+LIMIT 5;
+
+--17.Devuelve una lista con 2 filas a partir de la cuarta fila de la tabla fabricante. La cuarta fila también se debe incluir en la respuesta.
+SELECT * 
+FROM tienda_informatica.fabricante 
+LIMIT 5
+OFFSET 3;
 
 --18.Lista el nombre y el precio del producto más barato. (Utilice solamente las cláusulas ORDER BY y LIMIT).
 SELECT t.nombre,t.precio
 FROM tienda_informatica.producto t
 ORDER BY t.precio asc 
 LIMIT 1;
+
 --19.Lista el nombre y el precio del producto más caro. (Utilice solamente las cláusulas ORDER BY y LIMIT).
 SELECT t.nombre,t.precio
 FROM tienda_informatica.producto t
 ORDER BY t.precio desc 
 LIMIT 1;
+
 --20.Lista el nombre de todos los productos del fabricante cuyo identificador de fabricante es igual a 2.
 SELECT nombre
 FROM tienda_informatica.producto
@@ -64,7 +99,6 @@ WHERE (precio*0.93) <= 120;
 SELECT nombre,precio as precio_USD,(precio*0.93) as precio_Euro
 FROM tienda_informatica.producto
 WHERE (precio*0.93)>= 400;
-
 
 --23.Lista el nombre de los productos que no tienen un precio mayor o igual a 400€.
 SELECT nombre,precio as precio_USD,(precio*0.93) as precio_Euro
