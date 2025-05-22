@@ -6,19 +6,19 @@
 
 --1.1.6 Consultas resumen
 
-  -- 26. Devuelve un listado con los nombres de los fabricantes y el número de productos que tiene cada uno con un precio superior o igual a 220 €. No es necesario mostrar el nombre de los fabricantes que no tienen productos que cumplan la condición.
+  --26. Devuelve un listado con los nombres de los fabricantes y el número de productos que tiene cada uno con un precio superior o igual a 220 €. No es necesario mostrar el nombre de los fabricantes que no tienen productos que cumplan la condición.
   SELECT f.nombre, COUNT(p.id) AS num_productos FROM tienda_informatica.fabricante f JOIN tienda_informatica.producto p ON f.id = p.id_fabricante
   WHERE p.precio >= 220 GROUP BY f.nombre HAVING COUNT(p.id) > 0
 
-  -- 27. Devuelve un listado con los nombres de los fabricantes y el número de productos que tiene cada uno con un precio superior o igual a 220 €. El listado debe mostrar el nombre de todos los fabricantes, es decir, si hay algún fabricante que no tiene productos con un precio superior o igual a 220€ deberá aparecer en el listado con un valor igual a 0 en el número de productos.
+  --27. Devuelve un listado con los nombres de los fabricantes y el número de productos que tiene cada uno con un precio superior o igual a 220 €. El listado debe mostrar el nombre de todos los fabricantes, es decir, si hay algún fabricante que no tiene productos con un precio superior o igual a 220€ deberá aparecer en el listado con un valor igual a 0 en el número de productos.
   SELECT f.nombre, COUNT(p.id) AS num_productos FROM tienda_informatica.fabricante f 
   LEFT JOIN tienda_informatica.producto p ON f.id = p.id_fabricante AND p.precio >= 220 GROUP BY f.nombre
 
-  -- 28. Devuelve un listado con los nombres de los fabricantes donde la suma del precio de todos sus productos es superior a 1000 €.
+  --28. Devuelve un listado con los nombres de los fabricantes donde la suma del precio de todos sus productos es superior a 1000 €.
   SELECT f.nombre, SUM(p.precio) AS suma_precios FROM tienda_informatica.fabricante f
   JOIN tienda_informatica.producto p ON f.id = p.id_fabricante GROUP BY f.nombre HAVING SUM(p.precio) > 1000
 
-  -- 29. Devuelve un listado con el nombre del producto más caro que tiene cada fabricante. El resultado debe tener tres columnas: nombre del producto, precio y nombre del fabricante. El resultado tiene que estar ordenado alfabéticamente de menor a mayor por el nombre del fabricante.
+  --29. Devuelve un listado con el nombre del producto más caro que tiene cada fabricante. El resultado debe tener tres columnas: nombre del producto, precio y nombre del fabricante. El resultado tiene que estar ordenado alfabéticamente de menor a mayor por el nombre del fabricante.
   SELECT p.nombre AS nombre_producto, p.precio, f.nombre AS nombre_fabricante FROM tienda_informatica.producto p
   JOIN tienda_informatica.fabricante f ON p.id_fabricante = f.id WHERE p.precio = (SELECT MAX(p2.precio) 
   FROM tienda_informatica.producto p2 WHERE p2.id_fabricante = p.id_fabricante) ORDER BY f.nombre ASC
