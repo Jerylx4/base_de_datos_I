@@ -124,11 +124,294 @@ WHERE nombre LIKE '%el' OR nombre LIKE '%o';
   LEFT JOIN gestion_ventas.pedido p ON c.id=p.id_cliente
   WHERE p.id IS NULL
 
+ --4.Devuelve un listado que solamente muestre los comerciales que no han realizado ningún pedido.
+SELECT c.id, c.nombre, c.apellido1, c.apellido2
+FROM gestion_ventas.comercial c
+LEFT JOIN gestion_ventas.pedido p ON c.id = p.id_comercial
+WHERE p.id IS NULL
+ORDER BY c.apellido1, c.apellido2, c.nombre;
+
+--5.Devuelve un listado con los clientes que no han realizado ningún pedido y de los comerciales que no han participado en ningún pedido. Ordene el listado alfabéticamente por los apellidos y el nombre. En en listado deberá diferenciar de algún modo los clientes y los comerciales.
+SELECT 
+    'Cliente' AS tipo,
+    cl.id,
+    cl.nombre,
+    cl.apellido1,
+    cl.apellido2
+FROM 
+    gestion_ventas.cliente cl
+LEFT JOIN 
+    gestion_ventas.pedido p ON cl.id = p.id_cliente
+WHERE 
+    p.id IS NULL
+
+UNION ALL
+
+SELECT 
+    'Comercial' AS tipo,
+    c.id,
+    c.nombre,
+    c.apellido1,
+    c.apellido2
+FROM 
+    gestion_ventas.comercial c
+LEFT JOIN 
+    gestion_ventas.pedido p ON c.id = p.id_comercial
+WHERE 
+    p.id IS NULL
+
+ORDER BY 
+    apellido1, apellido2, nombre;
+--6.¿Se podrían realizar las consultas anteriores con NATURAL LEFT JOIN o NATURAL RIGHT JOIN? Justifique su respuesta.
+/*No se recomienda usar NATURAL LEFT JOIN o NATURAL RIGHT JOIN para estas consultas porque:
+
+Falta de claridad: NATURAL JOIN une las tablas automáticamente por columnas con el mismo nombre, lo que puede ser confuso y propenso a errores si la estructura de la tabla cambia.
+
+Problemas con esquemas: Si las tablas tienen otras columnas con nombres coincidentes que no son claves foráneas, el NATURAL JOIN podría unir por columnas incorrectas.
+
+Mantenimiento: Es más difícil de entender y mantener para otros desarrolladores.
+
+Especificidad: En este caso necesitamos unir explícitamente por id_comercial o id_cliente, no por todas las columnas con nombres coincidentes.*/
+	  
 -- 1.3.6 Consultas resumen
+--1.Calcula la cantidad total que suman todos los pedidos que aparecen en la tabla pedido.
+SELECT SUM(total) AS cantidad_total
+FROM gestion_ventas.pedido;
+
+--2.Calcula la cantidad media de todos los pedidos que aparecen en la tabla pedido.
+SELECT AVG(total) AS cantidad_media
+FROM gestion_ventas.pedido;
+
+--3.Calcula el número total de comerciales distintos que aparecen en la tabla pedido.
+SELECT COUNT(DISTINCT id_comercial) AS total_comerciales
+FROM gestion_ventas.pedido;
+
+--4.Calcula el número total de clientes que aparecen en la tabla cliente.
+SELECT COUNT(*) AS total_clientes
+FROM gestion_ventas.cliente;
+
+--5.Calcula cuál es la mayor cantidad que aparece en la tabla pedido.
+SELECT MAX(total) AS mayor_cantidad
+FROM gestion_ventas.pedido;
+
+--6.Calcula cuál es la menor cantidad que aparece en la tabla pedido.
+SELECT MIN(total) AS menor_cantidad
+FROM gestion_ventas.pedido;
+
+--7.Calcula cuál es el valor máximo de categoría para cada una de las ciudades que aparece en la tabla cliente.
+SELECT ciudad, MAX(categoria) AS max_categoria
+FROM gestion_ventas.cliente
+GROUP BY ciudad;
+
+--8.Calcula cuál es el máximo valor de los pedidos realizados durante el mismo día para cada uno de los clientes. Es decir, el mismo cliente puede haber realizado varios pedidos de diferentes cantidades el mismo día. Se pide que se calcule cuál es el pedido de máximo valor para cada uno de los días en los que un cliente ha realizado un pedido. Muestra el identificador del cliente, nombre, apellidos, la fecha y el valor de la cantidad.
+SELECT 
+    c.id AS id_cliente,
+    c.nombre,
+    c.apellido1,
+    c.apellido2,
+    p.fecha,
+    MAX(p.total) AS max_cantidad
+FROM 
+    gestion_ventas.cliente c
+JOIN 
+    gestion_ventas.pedido p ON c.id = p.id_cliente
+GROUP BY 
+    c.id, c.nombre, c.apellido1, c.apellido2, p.fecha
+ORDER BY 
+    c.apellido1, c.apellido2, c.nombre, p.fecha;
+	
+--9.Calcula cuál es el máximo valor de los pedidos realizados durante el mismo día para cada uno de los clientes, teniendo en cuenta que sólo queremos mostrar aquellos pedidos que superen la cantidad de 2000 €.
+SELECT 
+    c.id AS id_cliente,
+    c.nombre,
+    c.apellido1,
+    c.apellido2,
+    p.fecha,
+    MAX(p.total) AS max_cantidad
+FROM 
+    gestion_ventas.cliente c
+JOIN 
+    gestion_ventas.pedido p ON c.id = p.id_cliente
+GROUP BY 
+    c.id, c.nombre, c.apellido1, c.apellido2, p.fecha
+HAVING 
+    MAX(p.total) > 2000
+ORDER BY 
+    c.apellido1, c.apellido2, c.nombre, p.fecha;
+	
+--10.Calcula el máximo valor de los pedidos realizados para cada uno de los comerciales durante la fecha 2016-08-17. Muestra el identificador del comercial, nombre, apellidos y total.
+SELECT 
+    co.id AS id_comercial,
+    co.nombre,
+    co.apellido1,
+    co.apellido2,
+    MAX(p.total) AS total_maximo
+FROM 
+    gestion_ventas.comercial co
+JOIN 
+    gestion_ventas.pedido p ON co.id = p.id_comercial
+WHERE 
+    DATE(p.fecha) = '2016-08-17'
+GROUP BY 
+    co.id, co.nombre, co.apellido1, co.apellido2
+ORDER BY 
+    total_maximo DESC;
+	
+--11.Devuelve un listado con el identificador de cliente, nombre y apellidos y el número total de pedidos que ha realizado cada uno de clientes. 
+--Tenga en cuenta que pueden existir clientes que no han realizado ningún pedido. Estos clientes también deben aparecer en el listado indicando que el número de pedidos realizados es 0.
+SELECT 
+    c.id AS id_cliente,
+    c.nombre,
+    c.apellido1,
+    c.apellido2,
+    COUNT(p.id) AS total_pedidos
+FROM 
+    gestion_ventas.cliente c
+LEFT JOIN 
+    gestion_ventas.pedido p ON c.id = p.id_cliente
+GROUP BY 
+    c.id, c.nombre, c.apellido1, c.apellido2
+ORDER BY 
+    c.apellido1, c.apellido2, c.nombre;
+	
+--12.Devuelve un listado con el identificador de cliente, nombre y apellidos y el número total de pedidos que ha realizado cada uno de clientes durante el año 2017.
+SELECT 
+    c.id AS id_cliente,
+    c.nombre,
+    c.apellido1,
+    c.apellido2,
+    COUNT(p.id) AS total_pedidos_2017
+FROM 
+    gestion_ventas.cliente c
+LEFT JOIN 
+    gestion_ventas.pedido p ON c.id = p.id_cliente AND EXTRACT(YEAR FROM p.fecha) = 2017
+GROUP BY 
+    c.id, c.nombre, c.apellido1, c.apellido2
+ORDER BY 
+    c.apellido1, c.apellido2, c.nombre;
+	
+--13.Devuelve un listado que muestre el identificador de cliente, nombre, primer apellido y el valor de la máxima cantidad del pedido realizado por cada uno de los clientes. El resultado debe mostrar aquellos clientes que no han realizado ningún pedido indicando que la máxima cantidad de sus pedidos realizados es 0. Puede hacer uso de la función IFNULL.
+SELECT 
+    c.id AS id_cliente,
+    c.nombre,
+    c.apellido1,
+    COALESCE(MAX(p.total), 0) AS max_cantidad
+FROM 
+    gestion_ventas.cliente c
+LEFT JOIN 
+    gestion_ventas.pedido p ON c.id = p.id_cliente
+GROUP BY 
+    c.id, c.nombre, c.apellido1
+ORDER BY 
+    c.apellido1, c.nombre;
+	
+--14.Devuelve cuál ha sido el pedido de máximo valor que se ha realizado cada año.
+SELECT 
+    DATE_PART('year', fecha) AS año,
+    MAX(total) AS max_pedido
+FROM 
+    gestion_ventas.pedido
+GROUP BY 
+    DATE_PART('year', fecha)
+ORDER BY 
+    año;
+	
+--15.Devuelve el número total de pedidos que se han realizado cada año.
+
+SELECT 
+    DATE_PART('year', fecha) AS año,
+    COUNT(*) AS total_pedidos
+FROM 
+    gestion_ventas.pedido
+GROUP BY 
+    DATE_PART('year', fecha)
+ORDER BY 
+    año;
 
 -- 1.3.7 Subconsultas
+/1.Devuelve un listado con todos los pedidos que ha realizado Adela Salas Díaz. (Sin utilizar INNER JOIN)./
+select*from ventas.pedido
+where id_cliente=( 
+	select id 
+	from ventas.cliente
+	where nombre ilike 'adela'
+	and apellido1 ilike 'salas'
+	and apellido2 ilike'díaz');
+/2.Devuelve el número de pedidos en los que ha participado el comercial Daniel Sáez Vega. (Sin utilizar INNER JOIN)/
+Select count(*) as total
+from ventas.pedido
+where id_comercial = (
+  select id
+  from ventas.comercial
+  where nombre ilike  'daniel'
+    and apellido1 ilike  'sáez'
+    and apellido2 ilike  'vega'
+);
+/*3. Devuelve los datos del cliente que realizó el pedido más caro en el 
+año 2019. (Sin utilizar INNER JOIN)*/ 
+
+SELECT *
+FROM ventas.cliente
+WHERE id= ANY(SELECT id_cliente
+FROM ventas.pedido
+WHERE total=(SELECT MAX(total)FROM ventas.pedido WHERE fecha BETWEEN '2019-01-01' AND '2019-12-31'));
+
+--4. Devuelve la fecha y la cantidad del pedido de menor valor realizado por el cliente Pepe Ruiz Santana.
+SELECT fecha, total
+FROM ventas.pedido p
+INNER JOIN ventas.cliente c ON p.id_cliente = c.id
+WHERE nombre = 'Pepe'
+		AND apellido1 = 'Ruiz'
+		AND apellido2 = 'Santana'
+ORDER BY p.total ASC 
+LIMIT 1;
+
+/*5. Devuelve un listado con los datos de los clientes y los pedidos, de todos
+los clientes que han realizado un pedido durante el año 2017 con un valor
+mayor o igual al valor medio de los pedidos realizados durante ese
+mismo año*/
+
+SELECT c., p.
+FROM ventas.cliente c
+JOIN ventas.pedido p ON c.id = p.id
+WHERE EXTRACT(YEAR FROM p.fecha) = 2017
+AND p.total >= (
+    SELECT AVG(total)
+    FROM ventas.pedido
+    WHERE EXTRACT(YEAR FROM fecha) = 2017
+)
+ORDER BY p.fecha;
 
 -- 1.3.7.1 Con operadores básicos de comparación
+1.Devuelve un listado con todos los pedidos que ha realizado Adela Salas Díaz. (Sin utilizar INNER JOIN)./
+select*from ventas.pedido
+where id_cliente=( 
+	select id 
+	from ventas.cliente
+	where nombre ilike 'adela'
+	and apellido1 ilike 'salas'
+	and apellido2 ilike'díaz');
+
+/2.Devuelve el número de pedidos en los que ha participado el comercial Daniel Sáez Vega. (Sin utilizar INNER JOIN)/
+Select count(*) as total
+from ventas.pedido
+where id_comercial = (
+  select id
+  from ventas.comercial
+  where nombre ilike  'daniel'
+    and apellido1 ilike  'sáez'
+    and apellido2 ilike  'vega'
+);
+
+/*3. Devuelve los datos del cliente que realizó el pedido más caro en el 
+año 2019. (Sin utilizar INNER JOIN)*/ 
+
+SELECT *
+FROM ventas.cliente
+WHERE id= ANY(SELECT id_cliente
+FROM ventas.pedido
+WHERE total=(SELECT MAX(total)FROM ventas.pedido WHERE fecha BETWEEN '2019-01-01' AND '2019-12-31'));
+
 
 /*3. Devuelve los datos del cliente que realizó el pedido más caro en el 
 año 2019. (Sin utilizar INNER JOIN)*/ 
