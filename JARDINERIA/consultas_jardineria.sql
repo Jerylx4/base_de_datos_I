@@ -80,6 +80,11 @@
 
 -- 1.4.5 Consultas multitabla (Composición interna)
 
+  --1. Listado de clientes con su representante de ventas (NATURAL JOIN)
+  SELECT c.nombre_cliente, e.nombre, e.apellido1, e.apellido2
+  FROM jardineria.cliente c
+  NATURAL JOIN jardineria.empleado e;
+
   --1 Obtén un listado con el nombre de cada cliente y el nombre y apellido de su representante de ventas.
   Select nombre_cliente, nombre, apellido1, apellido2  From jardineria. cliente 
   INNER JOIN jardineria.empleado On jardineria.cliente.codigo_empleado_rep_ventas = jardineria.empleado.codigo_empleado;
@@ -283,6 +288,15 @@
     )
   );
 
+  --12. Empleados sin clientes asociados con datos de su jefe
+  SELECT e.*, 
+         j.nombre AS nombre_jefe, 
+         j.apellido1 AS apellido_jefe
+  FROM jardineria.empleado e
+  LEFT JOIN jardineria.cliente c ON e.codigo_empleado = c.codigo_empleado_rep_ventas
+  LEFT JOIN jardineria.empleado j ON e.codigo_jefe = j.codigo_empleado
+  WHERE c.codigo_cliente IS NULL;
+
 -- 1.4.7 Consultas resumen
   --1. ¿Cuántos empleados hay en la compañía?
   SELECT COUNT (*) AS total_empleados
@@ -378,6 +392,48 @@
 
 -- 1.4.8.1 Con operadores básicos de comparación
 
+  -- 1. Cliente con mayor límite de crédito
+  SELECT nombre_cliente, limite_credito
+  FROM jardineria.cliente
+  ORDER BY limite_credito DESC
+  LIMIT 1;
+  
+  -- 2. Producto más vendido (por unidades)
+  WITH ventas_productos AS (
+      SELECT codigo_producto, SUM(cantidad) AS total_unidades
+      FROM jardineria.detalle_pedido
+      GROUP BY codigo_producto
+  )
+  SELECT p.nombre
+  FROM jardineria.producto p
+  JOIN ventas_productos v ON p.codigo_producto = v.codigo_producto
+  ORDER BY v.total_unidades DESC
+  LIMIT 1;
+  
+  -- 3. Clientes con límite mayor que sus pagos totales
+  SELECT c.nombre_cliente, c.limite_credito
+  FROM jardineria.cliente c
+  WHERE c.limite_credito > (
+      SELECT COALESCE(SUM(p.total), 0)
+      FROM jardineria.pago p
+      WHERE p.codigo_cliente = c.codigo_cliente
+  );
+  
+  -- 4. Producto con más unidades en stock
+  SELECT nombre, cantidad_en_stock
+  FROM jardineria.producto
+  ORDER BY cantidad_en_stock DESC
+  LIMIT 1;
+  
+  -- 5. Empleados a cargo de Alberto Soria
+  SELECT e.nombre, e.apellido1, e.apellido2, e.email
+  FROM jardineria.empleado e
+  WHERE e.codigo_jefe = (
+      SELECT codigo_empleado
+      FROM jardineria.empleado
+      WHERE nombre = 'Alberto' AND apellido1 = 'Soria'
+  );
+
 -- 1.4.8.2 Subconsultas con ALL y ANY
   --9. Devuelve el nombre del producto que tenga el precio de venta más caro.
   SELECT * FROM jardineria.producto p  WHERE p.precio_venta >= ALL (SELECT p2.precio_venta FROM jardineria.producto p2)
@@ -466,6 +522,39 @@ WHERE EXISTS (
 
 -- 1.4.8.5 Subconsultas correlacionadas
 
+  -- 1. Clientes con pagos superiores a su promedio
+  SELECT c.nombre_cliente, p.total
+  FROM jardineria.cliente c
+  JOIN jardineria.pago p ON c.codigo_cliente = p.codigo_cliente
+  WHERE p.total > (
+      SELECT AVG(total)
+      FROM jardineria.pago
+      WHERE codigo_cliente = c.codigo_cliente
+  );
+  
+  -- 2. Productos vendidos en cantidades mayores a su promedio
+  SELECT p.nombre, dp.cantidad
+  FROM jardineria.producto p
+  JOIN jardineria.detalle_pedido dp ON p.codigo_producto = dp.codigo_producto
+  WHERE dp.cantidad > (
+      SELECT AVG(cantidad)
+      FROM jardineria.detalle_pedido
+      WHERE codigo_producto = p.codigo_producto
+  );
+  
+  -- 3. Empleados con más clientes que el promedio
+  WITH clientes_por_empleado AS (
+      SELECT codigo_empleado_rep_ventas, COUNT(*) AS num_clientes
+      FROM jardineria.cliente
+      GROUP BY codigo_empleado_rep_ventas
+  )
+  SELECT e.nombre, e.apellido1, cpe.num_clientes
+  FROM jardineria.empleado e
+  JOIN clientes_por_empleado cpe ON e.codigo_empleado = cpe.codigo_empleado_rep_ventas
+  WHERE cpe.num_clientes > (
+      SELECT AVG(num_clientes)
+      FROM clientes_por_empleado
+  );
 
 -- 1.4.9 Consultas variadas
 --1.Devuelve el listado de clientes indicando el nombre del cliente y cuántos pedidos ha realizado. Tenga en cuenta que pueden existir clientes que no han realizado ningún pedido.
